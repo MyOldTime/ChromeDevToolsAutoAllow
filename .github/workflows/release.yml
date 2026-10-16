@@ -1,0 +1,49 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: windows-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    defaults:
+      run:
+        shell: powershell
+    env:
+      RELEASE_TAG: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Validate tag
+        run: |
+          $version = (Get-Content VERSION -Raw).Trim()
+          if ($env:RELEASE_TAG -ne "v$version") { throw 'Tag does not match VERSION.' }
+      - name: Build and test
+        run: |
+          .\scripts\build.ps1
+          .\scripts\test.ps1 -UnitOnly -OutputDirectory .\work\release-tests
+      - name: Package clean source and binaries
+        run: .\scripts\release.ps1 -SkipBuild -IncludeSource
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $version = (Get-Content VERSION -Raw).Trim()
+          $assets = @(
+            "outputs/ChromeDevToolsAutoAllow-v$version-windows-x64.zip",
+            "outputs/ChromeDevToolsAutoAllow-v$version-source.zip",
+            "outputs/ChromeDevToolsAutoAllow-v$version-SHA256SUMS.txt"
+          )
+          gh release create $env:RELEASE_TAG @assets --verify-tag --repo $env:GITHUB_REPOSITORY --title "ChromeDevToolsAutoAllow $env:RELEASE_TAG" --notes-file "docs/releases/v$version.md"
+          if ($LASTEXITCODE -ne 0) { throw 'GitHub Release creation failed.' }

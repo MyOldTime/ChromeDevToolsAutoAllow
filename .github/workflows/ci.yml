@@ -1,0 +1,36 @@
+name: Build and test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: powershell
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build application and test harness
+        run: .\scripts\build.ps1
+      - name: Run non-interactive tests
+        run: .\scripts\test.ps1 -UnitOnly -OutputDirectory .\work\ci-tests
+      - name: Upload build and test log
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: windows-build
+          path: |
+            outputs/build/*.exe
+            work/ci-tests/self-test.log
+          if-no-files-found: warn
+          retention-days: 7

@@ -1,0 +1,32 @@
+name: Bug report / 缺陷报告
+description: Report an issue with a minimal, redacted reproduction.
+title: '[Bug] '
+body:
+  - type: markdown
+    attributes:
+      value: 'Do not include cookies, tokens, browser URLs, personal settings, or unredacted logs. Use private reporting for vulnerabilities.'
+  - type: input
+    id: version
+    attributes:
+      label: Application / Windows / Chrome versions
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Prefer a synthetic test. State whether this is observe mode or an explicitly user-enabled mode.
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: Expected and actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Minimal redacted log excerpts
+      description: An API return alone does not prove authorization or MCP connectivity.
+      render: text

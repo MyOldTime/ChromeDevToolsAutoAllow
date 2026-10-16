@@ -1,0 +1,32 @@
+# Local build/release output and archived development material
+/outputs/
+/work/
+**/bin/
+**/obj/
+.vs/
+.idea/
+*.user
+*.suo
+
+# Runtime state: never distribute saved consent or private logs
+settings.ini
+settings.ini.*.tmp
+logs/
+*.log
+*.jsonl
+*.marker
+last-error.txt
+*.exe
+*.dll
+*.pdb
+*.zip
+
+# Credentials and local environment
+.env
+.env.*
+!.env.example
+*.pfx
+*.p12
+*.key
+Thumbs.db
+Desktop.ini

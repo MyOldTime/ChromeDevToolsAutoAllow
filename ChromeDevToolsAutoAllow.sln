@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChromeDevToolsAutoAllow", "src\ChromeDevToolsAutoAllow\ChromeDevToolsAutoAllow.csproj", "{E8760B62-AC92-458C-A86D-F7EF2DB8AECA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChromeDevToolsAutoAllow.Tests", "tests\ChromeDevToolsAutoAllow.Tests\ChromeDevToolsAutoAllow.Tests.csproj", "{703F4050-1A30-4C0B-BCCB-5CC96C2E8012}"
+EndProject
+Global
+    GlobalSection(SolutionConfigurationPlatforms) = preSolution
+        Debug|x64 = Debug|x64
+        Release|x64 = Release|x64
+    EndGlobalSection
+    GlobalSection(ProjectConfigurationPlatforms) = postSolution
+        {E8760B62-AC92-458C-A86D-F7EF2DB8AECA}.Debug|x64.ActiveCfg = Debug|x64
+        {E8760B62-AC92-458C-A86D-F7EF2DB8AECA}.Debug|x64.Build.0 = Debug|x64
+        {E8760B62-AC92-458C-A86D-F7EF2DB8AECA}.Release|x64.ActiveCfg = Release|x64
+        {E8760B62-AC92-458C-A86D-F7EF2DB8AECA}.Release|x64.Build.0 = Release|x64
+        {703F4050-1A30-4C0B-BCCB-5CC96C2E8012}.Debug|x64.ActiveCfg = Debug|x64
+        {703F4050-1A30-4C0B-BCCB-5CC96C2E8012}.Debug|x64.Build.0 = Debug|x64
+        {703F4050-1A30-4C0B-BCCB-5CC96C2E8012}.Release|x64.ActiveCfg = Release|x64
+        {703F4050-1A30-4C0B-BCCB-5CC96C2E8012}.Release|x64.Build.0 = Release|x64
+    EndGlobalSection
+EndGlobal
