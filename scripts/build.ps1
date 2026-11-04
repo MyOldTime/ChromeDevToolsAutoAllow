@@ -34,6 +34,10 @@ if ($LASTEXITCODE -ne 0) { throw "Application compilation failed: $LASTEXITCODE"
 if (!$SkipTests) {
     $testArgs = $common + @('/target:exe', ('/out:' + (Join-Path $out 'ChromeDevToolsAutoAllow.Tests.exe')),
         ('/reference:' + $exe),
+        '/reference:System.Xaml.dll',
+        ('/reference:' + (Join-Path $framework 'WPF\PresentationCore.dll')),
+        ('/reference:' + (Join-Path $framework 'WPF\PresentationFramework.dll')),
+        ('/reference:' + (Join-Path $framework 'WPF\WindowsFormsIntegration.dll')),
         (Join-Path $root 'tests\ChromeDevToolsAutoAllow.Tests\Program.cs'),
         (Join-Path $root 'tests\ChromeDevToolsAutoAllow.Tests\Tests.cs'))
     & $csc @testArgs

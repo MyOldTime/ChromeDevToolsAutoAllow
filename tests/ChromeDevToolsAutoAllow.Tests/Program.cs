@@ -23,7 +23,7 @@ namespace ChromeDevToolsAutoAllow
             {
                 if (args.Contains("--fixture"))
                 {
-                    Tests.Fixture(Value(args, "--fixture"), args.Contains("--fixture-stays-open"), args.Contains("--fixture-delayed-close"), args.Contains("--fixture-disable-button"));
+                    Tests.Fixture(Value(args, "--fixture"), args.Contains("--fixture-stays-open"), args.Contains("--fixture-delayed-close"), args.Contains("--fixture-disable-button"), args.Contains("--fixture-input-protection"));
                     return 0;
                 }
                 if (args.Contains("--settings-probe"))

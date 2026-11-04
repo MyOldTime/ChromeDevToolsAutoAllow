@@ -41,7 +41,7 @@ Exit an older ChromeConsentGuard instance first. The new project intentionally s
 
 The build uses the Windows .NET Framework compiler without NuGet dependencies. The full test suite uses synthetic cross-process WinForms fixtures, never a real Chrome permission prompt. CI runs the non-interactive suite only.
 
-First-release local checks: 72 unit checks and 128 full-suite checks (including those unit checks). A prior real-world session completed a Chrome/MCP connection; that is not a reliability guarantee or coverage of every Chrome version.
+The v1.0.1 Windows test suite passed all 138 checks, including 72 unit checks. In a separate Chrome 156.0.8078.80 test profile, three debugging connections succeeded and Chrome DevTools MCP 1.12.0 returned the test page through `--autoConnect` and `list_pages`.
 
 ## Behavior and limits
 
@@ -54,4 +54,4 @@ First-release local checks: 72 unit checks and 128 full-suite checks (including 
 - Normal exit preserves a saved persistent preference. Stop clears it. File-write failures are reported.
 - No elevation, Chrome configuration edits, or automatic startup. Stopping the tool does not revoke an existing debugging session.
 
-See [security policy](../SECURITY.md), [contributing](../CONTRIBUTING.md) and [release notes](releases/v1.0.0.md). Licensed under [MIT](../LICENSE). Icons are original project artwork.
+See [security policy](../SECURITY.md), [contributing](../CONTRIBUTING.md) and [release notes](releases/v1.0.1.md). Licensed under [MIT](../LICENSE). Icons are original project artwork.

@@ -19,6 +19,7 @@
     <Reference Include="System" /><Reference Include="System.Core" />
     <Reference Include="System.Drawing" /><Reference Include="System.Windows.Forms" />
     <Reference Include="UIAutomationClient" /><Reference Include="UIAutomationTypes" /><Reference Include="WindowsBase" />
+    <Reference Include="PresentationCore" /><Reference Include="PresentationFramework" /><Reference Include="WindowsFormsIntegration" /><Reference Include="System.Xaml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" /><Compile Include="Tests.cs" />

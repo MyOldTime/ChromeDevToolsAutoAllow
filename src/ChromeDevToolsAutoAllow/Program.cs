@@ -522,14 +522,23 @@ namespace ChromeDevToolsAutoAllow
                 if (SafetyStop != null) SafetyStop("本次运行已尝试 256 次自动允许，触发保护性暂停。请检查日志后重启程序，再手动启用。");
                 return true;
             }
-            // Re-read the same live dialog immediately before Invoke; do not rely on cached coordinates.
+            // Chrome can expose an enabled Allow button while its dialog still ignores presses
+            // within the system double-click interval. Wait before the one permitted invocation.
+            int[] dialogId = match.Dialog.Element.GetRuntimeId();
+            int settleMs = SystemInformation.DoubleClickTime + 250;
+            log.Write("WAIT_BEFORE_INVOKE", "pid=" + pid + "; hwnd=" + hwnd + "; settleMs=" + settleMs);
+            if (stop.WaitOne(settleMs) || !lease.Active) return true;
+
             int currentPid;
             if (!policy.Verify(hwnd, out currentPid) || currentPid != pid) return true;
             var fresh = Matcher.Find(new Reader(pid).Read(hwnd), pid);
-            if (fresh.Count != 1 || fresh[0].Key() != match.Key() || !lease.Active) return true;
+            if (fresh.Count != 1 || Identity.Of(pid, fresh[0].Key()) != key ||
+                !dialogId.SequenceEqual(fresh[0].Dialog.Element.GetRuntimeId())) return false;
             object pattern;
+            if (!lease.Active) return true;
             if (!fresh[0].Allow.Element.TryGetCurrentPattern(InvokePattern.Pattern, out pattern))
             { RequireManual("NO_INVOKE_PATTERN", "按钮不支持当前调用方式，未执行授权。", null); return true; }
+            if (!lease.Active || stopping) return true;
             // An uncertain invoke is not retried automatically (avoid duplicate approval).
             invoked[key] = now;
             Interlocked.Increment(ref Attempts);
@@ -642,7 +651,7 @@ namespace ChromeDevToolsAutoAllow
             if (showTray)
             {
                 menu = TrayMenu.Create(
-                    delegate { UpdateState(); MessageBox.Show(TrayMenu.ModeText(lease.Mode) + "\n\n最近结果：\n" + watcher.LastResult + "\n\n" + watcher.Stats() + "\n\n注意：attempts 是调用尝试，不是授权成功数；dialogDismissed 也不是 MCP 连接成功数。\n\n设置：" + modes.Settings.Path + "\n\n日志：" + log.Path, "ChromeDevToolsAutoAllow 1.0.0"); },
+                    delegate { UpdateState(); MessageBox.Show(TrayMenu.ModeText(lease.Mode) + "\n\n最近结果：\n" + watcher.LastResult + "\n\n" + watcher.Stats() + "\n\n注意：attempts 是调用尝试，不是授权成功数；dialogDismissed 也不是 MCP 连接成功数。\n\n设置：" + modes.Settings.Path + "\n\n日志：" + log.Path, "ChromeDevToolsAutoAllow 1.0.1"); },
                     delegate { Enable(false); }, delegate { Enable(true); }, delegate { StopAutomatic(); },
                     delegate { watcher.ScanExisting(); }, delegate { ExitThread(); });
                 menu.Opening += delegate { UpdateState(); };
@@ -655,7 +664,7 @@ namespace ChromeDevToolsAutoAllow
                 watcher.SafetyStop = delegate(string reason) { Post(delegate { StopAutomatic(); MessageBox.Show(reason, "已停止自动允许", MessageBoxButtons.OK, MessageBoxIcon.Warning); }); };
                 watcher.ResultChanged = delegate { Post(UpdateState); };
                 UpdateState();
-                tray.ShowBalloonTip(5000, "ChromeDevToolsAutoAllow 1.0.0", settingsWarning != null ? "设置无法读取，已保持仅检测。请查看日志。" : "已启动：" + TrayMenu.ModeText(lease.Mode) + "。右键托盘可立即停止。", ToolTipIcon.Info);
+                tray.ShowBalloonTip(5000, "ChromeDevToolsAutoAllow 1.0.1", settingsWarning != null ? "设置无法读取，已保持仅检测。请查看日志。" : "已启动：" + TrayMenu.ModeText(lease.Mode) + "。右键托盘可立即停止。", ToolTipIcon.Info);
             }
             watcher.Start();
             if (seconds > 0) duration = new System.Threading.Timer(delegate { try { marshal.BeginInvoke((Action)ExitThread); } catch { } }, null, seconds * 1000, Timeout.Infinite);
@@ -740,7 +749,7 @@ namespace ChromeDevToolsAutoAllow
                 bool created;
                 using (var mutex = new Mutex(true, "Local\\ChromeConsentGuard.Observer.v1", out created))
                 {
-                    if (!created) { if (!args.Contains("--no-tray")) MessageBox.Show("程序已在运行。如需使用新版，请先从旧版托盘菜单退出，再启动新版。", "ChromeDevToolsAutoAllow 1.0.0"); return 2; }
+                    if (!created) { if (!args.Contains("--no-tray")) MessageBox.Show("程序已在运行。如需使用新版，请先从旧版托盘菜单退出，再启动新版。", "ChromeDevToolsAutoAllow 1.0.1"); return 2; }
                     using (var log = new Log(logfile))
                     using (var app = new TrayContext(new ProcessPolicy(path, 0), log, !args.Contains("--no-tray"), seconds, args.Contains("--observe"))) Application.Run(app);
                     mutex.ReleaseMutex();

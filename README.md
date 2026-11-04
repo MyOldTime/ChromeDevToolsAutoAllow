@@ -43,7 +43,7 @@
 
 ## 下载与运行
 
-从本仓库的 **Releases** 页面下载 `ChromeDevToolsAutoAllow-v1.0.0-windows-x64.zip`，解压到可写目录，运行 `ChromeDevToolsAutoAllow.exe`。
+从本仓库的 **Releases** 页面下载 `ChromeDevToolsAutoAllow-v1.0.1-windows-x64.zip`，解压到可写目录，运行 `ChromeDevToolsAutoAllow.exe`。
 
 - 目标环境：Windows x64、.NET Framework 4.8、桌面版 Google Chrome。
 - 发布包不含个人 `settings.ini`，首次启动保持仅检测。
@@ -68,8 +68,8 @@
 ## 验证状态与限制
 
 - 首发基于旧项目 ChromeConsentGuard v1.2.1，重新命名为独立项目 **v1.0.0**，不表示功能回退。
-- 项目拆分后，本机单元检查 **72 项**、完整模拟集成检查 **128 项**通过；后者已包含前者。
-- 前身版本的一次真实联调记录到调用返回、弹窗消失及 MCP 连接成功，但这**不是长期稳定性、其他 Chrome 版本或其他系统的保证**。
+- v1.0.1 在 Windows x64 上通过 **138 项**检查，其中包含 **72 项**单元检查。
+- 在 Chrome 156.0.8078.80 的独立测试配置中，连续 3 次调试连接成功，Chrome DevTools MCP 1.12.0 通过 `--autoConnect` 成功执行了 `list_pages`。
 - `INVOKE_RETURNED` 不代表授权成功；`DIALOG_DISMISSED` 不代表 MCP 已连接。
 - UIA 提供方可能阻塞，有限等待不是外部调用的硬超时。原生 UI、语言或 Chrome 版本变化可能导致识别失败。
 - 永久模式仍受单次运行 256 次尝试的保护上限约束；退出不撤销 Chrome 已有的调试连接。

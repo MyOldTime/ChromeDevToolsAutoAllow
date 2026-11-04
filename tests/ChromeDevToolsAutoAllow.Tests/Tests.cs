@@ -60,6 +60,7 @@ namespace ChromeDevToolsAutoAllow
                     VerificationTests();
                     if (includeIntegration)
                     {
+                    Integration(folder, ApprovalMode.Permanent, "input-protection");
                     Integration(folder, ApprovalMode.Observe);
                     Integration(folder, ApprovalMode.Temporary);
                     Integration(folder, ApprovalMode.Permanent);
@@ -224,6 +225,7 @@ namespace ChromeDevToolsAutoAllow
             string extra = stays ? " --fixture-stays-open" : "";
             if (behavior == "delayed-close") extra += " --fixture-delayed-close";
             if (behavior == "disable-button") extra += " --fixture-disable-button";
+            if (behavior == "input-protection") extra += " --fixture-input-protection";
             var psi = new ProcessStartInfo(exe, "--fixture \"" + marker + "\"" + extra) { UseShellExecute = false, CreateNoWindow = true, WindowStyle = ProcessWindowStyle.Hidden };
             using (var child = Process.Start(psi))
             {
@@ -237,6 +239,17 @@ namespace ChromeDevToolsAutoAllow
                 {
                     int safetyStops = 0;
                     watcher.SafetyStop = delegate(string reason) { modes.Stop(); Interlocked.Increment(ref safetyStops); };
+                    var sinceDetection = new Stopwatch();
+                    long attemptAfterMs = -1;
+                    if (behavior == "input-protection")
+                    {
+                        watcher.Notify = delegate { if (!sinceDetection.IsRunning) sinceDetection.Start(); };
+                        watcher.ResultChanged = delegate
+                        {
+                            if (Interlocked.Read(ref watcher.Attempts) == 1)
+                                Interlocked.CompareExchange(ref attemptAfterMs, sinceDetection.ElapsedMilliseconds, -1);
+                        };
+                    }
                     // Exercise actual cross-process WinEvent delivery + real UIA, not a mocked callback.
                     watcher.Start();
                     var elapsed = Stopwatch.StartNew();
@@ -249,6 +262,9 @@ namespace ChromeDevToolsAutoAllow
                     var settle = Stopwatch.StartNew(); while (settle.ElapsedMilliseconds < 650) { Application.DoEvents(); Thread.Sleep(20); }
                     Check(Interlocked.Read(ref watcher.Events) > 0, label + ": real WinEvent callback received");
                     Check(Interlocked.Read(ref watcher.Detected) > 0, label + ": real cross-process UIA dialog recognized");
+                    if (behavior == "input-protection")
+                        Check(Interlocked.Read(ref attemptAfterMs) >= SystemInformation.DoubleClickTime && !File.Exists(marker + ".early"),
+                            "Wait for input protection before dispatch, even when the provider processes the invocation later");
                     Check(arm ? File.Exists(marker) : !File.Exists(marker), arm ? "Fixture Allow invoked, marker verifies handler ran" : "Observe mode does not invoke fixture Allow");
                     Check(arm ? Interlocked.Read(ref watcher.Invoked) == 1 : Interlocked.Read(ref watcher.Invoked) == 0, label + ": API-return count " + (arm ? "one" : "zero"));
                     if (arm) Check(File.ReadAllText(marker).Trim() == "1", "Repeated real events do not invoke the same fixture button twice");
@@ -276,25 +292,35 @@ namespace ChromeDevToolsAutoAllow
               }
             }
         }
-        internal static void Fixture(string marker, bool staysOpen, bool delayedClose, bool disableButton)
+        internal static void Fixture(string marker, bool staysOpen, bool delayedClose, bool disableButton, bool inputProtection)
         {
             using (var form = new Form { Text = "Allow remote debugging?", Size = new Size(540, 230), StartPosition = FormStartPosition.CenterScreen, ShowInTaskbar = false })
             {
                 var text = new Label { Text = "LOCAL TEST FIXTURE ONLY\nAn external app requests full control, including cookies.\nUse trusted apps only. No browser permission is granted.", Location = new Point(20, 20), Size = new Size(490, 85) };
-                var yes = new Button { Text = "Allow", Location = new Point(315, 125), Size = new Size(90, 30) };
+                // Like Chrome, this control exposes its own UIA Invoke provider. The legacy
+                // WinForms proxy tries to synthesize keyboard input to focus a background HWND.
+                var yes = new System.Windows.Controls.Button { Content = "Allow" };
+                var yesHost = new System.Windows.Forms.Integration.ElementHost { Child = yes, Location = new Point(315, 125), Size = new Size(90, 30) };
                 var no = new Button { Text = "Cancel", Location = new Point(415, 125), Size = new Size(90, 30) };
                 var closeLater = new System.Windows.Forms.Timer { Interval = 1100 };
                 closeLater.Tick += delegate { closeLater.Stop(); form.Close(); };
+                var visibleFor = new Stopwatch();
+                form.Shown += delegate { visibleFor.Start(); };
                 int clicks = 0;
                 yes.Click += delegate
                 {
+                    if (inputProtection && visibleFor.ElapsedMilliseconds < SystemInformation.DoubleClickTime)
+                    {
+                        File.WriteAllText(marker + ".early", visibleFor.ElapsedMilliseconds.ToString(CultureInfo.InvariantCulture));
+                        return;
+                    }
                     File.WriteAllText(marker, (++clicks).ToString(CultureInfo.InvariantCulture));
-                    if (disableButton) yes.Enabled = false;
+                    if (disableButton) yes.IsEnabled = false;
                     if (delayedClose) closeLater.Start();
                     else if (!staysOpen) form.Close();
                 };
                 no.Click += delegate { form.Close(); };
-                form.Controls.AddRange(new Control[] { text, yes, no });
+                form.Controls.AddRange(new Control[] { text, yesHost, no });
                 var timer = new System.Windows.Forms.Timer { Interval = 16000 };
                 timer.Tick += delegate { form.Close(); }; timer.Start();
                 var pulse = new System.Windows.Forms.Timer { Interval = 350 };

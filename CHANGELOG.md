@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.1] - 2026-11-04
+
+- 修复 Chrome 远程调试弹窗已被识别、“允许”按钮已启用，但过早调用被 Chrome 忽略的问题。
+- 自动模式会等待 Windows 双击间隔加 250 毫秒，再次核对进程、弹窗和按钮，然后调用一次。`WAIT_BEFORE_INVOKE` 日志记录本次等待时长。
+
 ## [1.0.0] - 2026-10-16
 
 首次以 **ChromeDevToolsAutoAllow** 名称发布，来源为 ChromeConsentGuard v1.2.1。

@@ -26,9 +26,9 @@
 
 输出为：
 
-- `outputs/ChromeDevToolsAutoAllow-v1.0.0-windows-x64.zip`
-- `outputs/ChromeDevToolsAutoAllow-v1.0.0-source.zip`
-- `outputs/ChromeDevToolsAutoAllow-v1.0.0-SHA256SUMS.txt`
+- `outputs/ChromeDevToolsAutoAllow-v<版本>-windows-x64.zip`
+- `outputs/ChromeDevToolsAutoAllow-v<版本>-source.zip`
+- `outputs/ChromeDevToolsAutoAllow-v<版本>-SHA256SUMS.txt`
 
 二进制包包含应用 EXE、许可证、版本、使用说明及发布说明；**不含个人设置、日志或测试 EXE**。源码包来自干净的 Git 提交，不从整台机器或整个工作目录打包。
 
@@ -36,7 +36,7 @@
 
 ## GitHub 发布
 
-先确认仓库所属账号/组织与可见性，并在有权限的 GitHub 账号下建立 `ChromeDevToolsAutoAllow` 仓库。添加对应的 `origin` 后推送 `main` 和经过检查的 `v1.0.0` 标签。
+先确认仓库所属账号、可见性与 `origin` 地址，再推送 `main` 和与 `VERSION` 对应的标签。
 
 标签发布工作流会：
 
