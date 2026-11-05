@@ -651,7 +651,7 @@ namespace ChromeDevToolsAutoAllow
             if (showTray)
             {
                 menu = TrayMenu.Create(
-                    delegate { UpdateState(); MessageBox.Show(TrayMenu.ModeText(lease.Mode) + "\n\n最近结果：\n" + watcher.LastResult + "\n\n" + watcher.Stats() + "\n\n注意：attempts 是调用尝试，不是授权成功数；dialogDismissed 也不是 MCP 连接成功数。\n\n设置：" + modes.Settings.Path + "\n\n日志：" + log.Path, "ChromeDevToolsAutoAllow 1.0.1"); },
+                    delegate { UpdateState(); MessageBox.Show(TrayMenu.ModeText(lease.Mode) + "\n\n最近结果：\n" + watcher.LastResult + "\n\n" + watcher.Stats() + "\n\n注意：attempts 是调用尝试，不是授权成功数；dialogDismissed 也不是 MCP 连接成功数。\n\n设置：" + modes.Settings.Path + "\n\n日志：" + log.Path, Program.DisplayTitle); },
                     delegate { Enable(false); }, delegate { Enable(true); }, delegate { StopAutomatic(); },
                     delegate { watcher.ScanExisting(); }, delegate { ExitThread(); });
                 menu.Opening += delegate { UpdateState(); };
@@ -664,7 +664,7 @@ namespace ChromeDevToolsAutoAllow
                 watcher.SafetyStop = delegate(string reason) { Post(delegate { StopAutomatic(); MessageBox.Show(reason, "已停止自动允许", MessageBoxButtons.OK, MessageBoxIcon.Warning); }); };
                 watcher.ResultChanged = delegate { Post(UpdateState); };
                 UpdateState();
-                tray.ShowBalloonTip(5000, "ChromeDevToolsAutoAllow 1.0.1", settingsWarning != null ? "设置无法读取，已保持仅检测。请查看日志。" : "已启动：" + TrayMenu.ModeText(lease.Mode) + "。右键托盘可立即停止。", ToolTipIcon.Info);
+                tray.ShowBalloonTip(5000, Program.DisplayTitle, settingsWarning != null ? "设置无法读取，已保持仅检测。请查看日志。" : "已启动：" + TrayMenu.ModeText(lease.Mode) + "。右键托盘可立即停止。", ToolTipIcon.Info);
             }
             watcher.Start();
             if (seconds > 0) duration = new System.Threading.Timer(delegate { try { marshal.BeginInvoke((Action)ExitThread); } catch { } }, null, seconds * 1000, Timeout.Infinite);
@@ -720,6 +720,9 @@ namespace ChromeDevToolsAutoAllow
 
     internal static class Program
     {
+        internal static readonly string DisplayTitle =
+            "ChromeDevToolsAutoAllow " + typeof(Program).Assembly.GetName().Version.ToString(3);
+
         private static string Value(string[] args, string name, string fallback)
         {
             int i = Array.IndexOf(args, name); if (i < 0) return fallback;
@@ -749,7 +752,7 @@ namespace ChromeDevToolsAutoAllow
                 bool created;
                 using (var mutex = new Mutex(true, "Local\\ChromeConsentGuard.Observer.v1", out created))
                 {
-                    if (!created) { if (!args.Contains("--no-tray")) MessageBox.Show("程序已在运行。如需使用新版，请先从旧版托盘菜单退出，再启动新版。", "ChromeDevToolsAutoAllow 1.0.1"); return 2; }
+                    if (!created) { if (!args.Contains("--no-tray")) MessageBox.Show("程序已在运行。如需使用新版，请先从旧版托盘菜单退出，再启动新版。", DisplayTitle); return 2; }
                     using (var log = new Log(logfile))
                     using (var app = new TrayContext(new ProcessPolicy(path, 0), log, !args.Contains("--no-tray"), seconds, args.Contains("--observe"))) Application.Run(app);
                     mutex.ReleaseMutex();

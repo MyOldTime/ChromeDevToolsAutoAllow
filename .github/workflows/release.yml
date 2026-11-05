@@ -45,5 +45,15 @@ jobs:
             "outputs/ChromeDevToolsAutoAllow-v$version-source.zip",
             "outputs/ChromeDevToolsAutoAllow-v$version-SHA256SUMS.txt"
           )
-          gh release create $env:RELEASE_TAG @assets --verify-tag --repo $env:GITHUB_REPOSITORY --title "ChromeDevToolsAutoAllow $env:RELEASE_TAG" --notes-file "docs/releases/v$version.md"
-          if ($LASTEXITCODE -ne 0) { throw 'GitHub Release creation failed.' }
+          $ErrorActionPreference = 'Continue'
+          gh release view $env:RELEASE_TAG --repo $env:GITHUB_REPOSITORY *> $null
+          $releaseExists = $LASTEXITCODE -eq 0
+          $ErrorActionPreference = 'Stop'
+          if ($releaseExists) {
+            gh release upload $env:RELEASE_TAG @assets --clobber --repo $env:GITHUB_REPOSITORY
+            if ($LASTEXITCODE -ne 0) { throw 'GitHub Release asset replacement failed.' }
+            gh release edit $env:RELEASE_TAG --verify-tag --repo $env:GITHUB_REPOSITORY --target $env:GITHUB_SHA --title "ChromeDevToolsAutoAllow $env:RELEASE_TAG" --notes-file "docs/releases/v$version.md"
+          } else {
+            gh release create $env:RELEASE_TAG @assets --verify-tag --repo $env:GITHUB_REPOSITORY --title "ChromeDevToolsAutoAllow $env:RELEASE_TAG" --notes-file "docs/releases/v$version.md"
+          }
+          if ($LASTEXITCODE -ne 0) { throw 'GitHub Release publication failed.' }

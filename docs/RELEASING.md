@@ -11,8 +11,9 @@
 1. `VERSION`
 2. `src/ChromeDevToolsAutoAllow/Properties/AssemblyInfo.cs`
 3. `src/ChromeDevToolsAutoAllow/app.manifest`
-4. `Program.cs` 的用户界面版本文字
-5. `CHANGELOG.md` 与 `docs/releases/v<版本>.md`
+4. `CHANGELOG.md` 与 `docs/releases/v<版本>.md`
+
+托盘状态窗口和启动提示从应用程序集读取版本。发布到 GitHub 后，本机运行中的旧 EXE 仍需退出并替换，随后启动新程序。
 
 ## 本地发布包
 
@@ -43,7 +44,7 @@
 1. 检查标签是否与 `VERSION` 一致。
 2. 在 Windows runner 编译并运行非交互测试。
 3. 打包 Windows 产物、干净源码和 SHA-256 清单。
-4. 使用仓库范围的 `GITHUB_TOKEN` 创建同名 Release 并上传附件。
+4. 使用仓库范围的 `GITHUB_TOKEN` 创建同名 Release 并上传附件。重新发布已存在的标签时，覆盖同名附件并更新发布说明。
 
 工作流仅在发布任务授予 `contents: write`；使用固定 SHA 的官方 Actions。不会修改 Chrome、操作真实授权或接收个人访问令牌文件。
 
